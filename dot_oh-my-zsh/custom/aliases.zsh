@@ -1,0 +1,6 @@
+alias l='ls -lah'
+alias sourcezsh='source ~/.zshrc'
+alias v='nvim'
+alias ff='fastfetch'
+alias lg='lazygit'
+alias y='yazi'

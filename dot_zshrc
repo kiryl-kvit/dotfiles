@@ -1,0 +1,38 @@
+export ZSH="$HOME/.oh-my-zsh"
+export ZSH_CUSTOM="$ZSH/custom"
+export GPG_TTY=$(tty)
+
+setopt hist_ignore_space hist_ignore_dups hist_ignore_all_dups
+
+source $ZSH_CUSTOM/zshconfig.zsh
+source $ZSH_CUSTOM/aliases.zsh
+source $ZSH_CUSTOM/zshfunctions.zsh
+source $ZSH/oh-my-zsh.sh
+source $HOME/.nvm/nvm.sh
+
+if [ -z "$SSH_AUTH_SOCK" ]; then
+  eval "$(ssh-agent -s)"
+  for key in ~/.ssh/id_*; do
+    [[ -f "$key" && "$key" != *.pub ]] && ssh-add "$key" 2>/dev/null
+  done
+fi
+
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$PATH:/home/pa2/.dotnet/tools"
+
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
+
+if command -v fzf &>/dev/null; then
+  source <(fzf --zsh)
+  export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix"
+  export FZF_CTRL_T_COMMAND=$FZF_DEFAULT_COMMAND
+  export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix"
+fi
+
+eval "$(starship init zsh)"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+# bun completions
+[ -s "/home/pa2/.bun/_bun" ] && source "/home/pa2/.bun/_bun"
