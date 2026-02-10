@@ -1,0 +1,10 @@
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519
+
+# Host example-server
+#   HostName server.example.com
+#   User admin
+#   Port 22
+#   IdentityFile ~/.ssh/id_ed25519
