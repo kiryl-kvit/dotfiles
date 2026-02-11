@@ -51,7 +51,7 @@ install_yay() {
 install_arch() {
   install_yay
   
-  local packages=(zoxide fzf fd ripgrep git-delta fastfetch neovim ttf-firacode-nerd)
+  local packages=(zoxide fzf fd ripgrep git-delta fastfetch neovim ttf-firacode-nerd vivid)
   local to_install=()
   
   for pkg in "${packages[@]}"; do
@@ -131,6 +131,14 @@ install_debian() {
     sudo dpkg -i "$TMPDIR/fastfetch.deb"
   else
     echo "fastfetch already installed, skipping..."
+  fi
+
+  if ! command -v vivid >/dev/null 2>&1; then
+    VIVID_VERSION="$(curl -s https://api.github.com/repos/sharkdp/vivid/releases/latest | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')"
+    curl -sL "https://github.com/sharkdp/vivid/releases/download/${VIVID_VERSION}/vivid_${VIVID_VERSION}_${DEB_ARCH}.deb" -o "$TMPDIR/vivid.deb"
+    sudo dpkg -i "$TMPDIR/vivid.deb"
+  else
+    echo "vivid already installed, skipping..."
   fi
 
   if ! dpkg -l neovim 2>/dev/null | grep -q "^ii"; then
