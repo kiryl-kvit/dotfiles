@@ -1,32 +1,5 @@
 #!/usr/bin/env bash
 
-declare -A plugins=(
-  [zsh-autosuggestions]="https://github.com/zsh-users/zsh-autosuggestions.git"
-  [zsh-syntax-highlighting]="https://github.com/zsh-users/zsh-syntax-highlighting.git"
-)
-
-install_oh_my_zsh() {
-  if [ -d "$HOME/.oh-my-zsh" ]; then
-    echo "Oh My Zsh already installed, skipping..."
-    return
-  fi
-
-  PLUGIN_DIR="$ZSH_CUSTOM/plugins"
-  mkdir -p "$PLUGIN_DIR"
-
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
-  for name in "${!plugins[@]}"; do
-    dest="$PLUGIN_DIR/$name"
-    repo="${plugins[$name]}"
-    if [ -d "$dest" ]; then
-      echo "Plugin $name already installed, skipping..."
-    else
-      git clone --depth=1 "$repo" "$dest"
-    fi
-  done
-}
-
 install_starship() {
   if command -v starship >/dev/null 2>&1; then
     echo "Starship already installed, skipping..."
@@ -50,22 +23,7 @@ install_yay() {
 
 install_arch() {
   install_yay
-  
-  local packages=(zoxide fzf fd ripgrep git-delta fastfetch neovim ttf-firacode-nerd vivid)
-  local to_install=()
-  
-  for pkg in "${packages[@]}"; do
-    if ! pacman -Qi "$pkg" >/dev/null 2>&1; then
-      to_install+=("$pkg")
-    fi
-  done
-  
-  if [ ${#to_install[@]} -eq 0 ]; then
-    echo "All Arch packages already installed, skipping..."
-  else
-    echo "Installing packages: ${to_install[*]}"
-    sudo pacman -S --noconfirm "${to_install[@]}"
-  fi
+  sudo pacman -S --noconfirm zoxide fzf fd ripgrep git-delta fastfetch neovim ttf-firacode-nerd vivid lazyvim
 }
 
 install_neovim() {
@@ -162,7 +120,6 @@ install_debian() {
   fi
 }
 
-install_oh_my_zsh
 install_starship
 
 if command -v apt >/dev/null 2>&1; then
