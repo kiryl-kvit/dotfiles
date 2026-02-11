@@ -6,8 +6,6 @@ if command -v vivid >/dev/null 2>&1; then
   export LS_COLORS="$(vivid generate catppuccin-mocha)"
 fi
 
-export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
-
 # Colored man pages
 export LESS_TERMCAP_mb=$'\e[1;32m'     # begin bold
 export LESS_TERMCAP_md=$'\e[1;34m'     # begin blink
