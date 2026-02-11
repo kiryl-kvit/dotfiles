@@ -40,8 +40,6 @@ zsh_add_plugin "zsh-users/zsh-autosuggestions"
 bindkey '^y' autosuggest-accept
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
-zsh_add_plugin "tarrasch/zsh-bd"
-
 zsh_add_plugin "hlissner/zsh-autopair"
 
 zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
