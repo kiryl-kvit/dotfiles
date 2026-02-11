@@ -11,6 +11,7 @@ alias tl='tmux ls'
 alias chd='chezmoi cd'
 alias chra='chezmoi re-add'
 alias cha='chezmoi add'
+alias oc='opencode'
 
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
