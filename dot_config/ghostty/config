@@ -12,3 +12,4 @@ cursor-style-blink = true
 shell-integration-features = no-cursor
 shell-integration = zsh
 maximize = true
+clipboard-paste-protection = false
