@@ -2,7 +2,7 @@ export ZSHDIR="$HOME/.config/zsh"
 export GPG_TTY=$(tty)
 bindkey -s "^f" " tmux-sessionizer\n"
 
-setopt hist_ignore_space hist_ignore_dups hist_ignore_all_dups
+setopt hist_ignore_space hist_ignore_dups hist_ignore_all_dups auto_cd auto_pushd cd_silent pushd_ignore_dups
 
 source $ZSHDIR/zshconfig.zsh
 source $ZSHDIR/aliases.zsh
