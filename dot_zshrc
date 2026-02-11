@@ -2,6 +2,9 @@ export ZSHDIR="$HOME/.config/zsh"
 export GPG_TTY=$(tty)
 bindkey -s "^f" " tmux-sessionizer\n"
 
+# Configure word boundaries for Ctrl+W to delete one word at a time
+WORDCHARS=''
+
 setopt hist_ignore_space hist_ignore_dups hist_ignore_all_dups auto_cd auto_pushd cd_silent pushd_ignore_dups
 
 source $ZSHDIR/zshconfig.zsh
@@ -40,8 +43,4 @@ zsh_add_plugin "zsh-users/zsh-autosuggestions"
 bindkey '^y' autosuggest-accept
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
-zsh_add_plugin "hlissner/zsh-autopair"
-
 zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
-ZSH_HIGHLIGHT_STYLES[arg0]="none"
-ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
