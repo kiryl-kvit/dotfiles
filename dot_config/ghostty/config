@@ -13,3 +13,6 @@ shell-integration-features = no-cursor
 shell-integration = zsh
 maximize = true
 clipboard-paste-protection = false
+
+keybind = ctrl+right="\x1b[1;5C"
+keybind = ctrl+left="\x1b[1;5D"
