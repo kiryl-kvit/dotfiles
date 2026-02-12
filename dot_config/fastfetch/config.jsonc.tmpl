@@ -1,7 +1,13 @@
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
   "logo": {
+    {{- if eq .chezmoi.osRelease.id "ubuntu" }}
+    "source": "ubuntu"
+    {{- else if eq .chezmoi.osRelease.id "arch" }}
     "source": "arch2"
+    {{- else }}
+    "source": "linux"
+    {{- end }}
   },
   "modules": [
     "title",
