@@ -2,6 +2,11 @@ export ZSHDIR="$HOME/.config/zsh"
 export GPG_TTY=$(tty)
 bindkey -s "^f" " tmux-sessionizer\n"
 
+# Fix terminal compatibility for SSH sessions from Ghostty
+if [[ -n "$SSH_CONNECTION" && "$TERM" == "xterm-ghostty" ]]; then
+  export TERM=xterm-256color
+fi
+
 WORDCHARS=''
 
 setopt hist_ignore_space hist_ignore_dups hist_ignore_all_dups auto_cd auto_pushd cd_silent pushd_ignore_dups

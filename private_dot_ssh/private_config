@@ -1,7 +1,14 @@
+# Fix Ghostty terminal compatibility for all SSH connections
+# Use RequestTTY to ensure proper terminal allocation
+Host *
+  RequestTTY yes
+  SetEnv TERM=xterm-256color
+
 Host github.com
   HostName github.com
   User git
   IdentityFile ~/.ssh/id_ed25519
+  RequestTTY no
 
 # Host example-server
 #   HostName server.example.com
