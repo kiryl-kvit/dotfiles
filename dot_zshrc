@@ -28,7 +28,15 @@ export PATH="$PATH:/home/pa2/.dotnet/tools"
 command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 
 if command -v fzf &>/dev/null; then
-  source <(fzf --zsh)
+  # Use --zsh flag for fzf >= 0.48.0, fallback to legacy method for older versions
+  if fzf --zsh &>/dev/null; then
+    source <(fzf --zsh)
+  else
+    # Legacy fzf initialization for older versions
+    [[ -f /usr/share/fzf/key-bindings.zsh ]] && source /usr/share/fzf/key-bindings.zsh
+    [[ -f /usr/share/fzf/completion.zsh ]] && source /usr/share/fzf/completion.zsh
+    [[ -f ~/.fzf.zsh ]] && source ~/.fzf.zsh
+  fi
   export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix"
   export FZF_CTRL_T_COMMAND=$FZF_DEFAULT_COMMAND
   export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix"
