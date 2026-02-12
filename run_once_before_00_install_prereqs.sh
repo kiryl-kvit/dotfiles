@@ -39,13 +39,13 @@ install_neovim() {
 install_debian() {
   local apt_packages=(fzf fd-find ripgrep curl software-properties-common neovim)
   local to_install=()
-  
+
   for pkg in "${apt_packages[@]}"; do
     if ! dpkg -l "$pkg" 2>/dev/null | grep -q "^ii"; then
       to_install+=("$pkg")
     fi
   done
-  
+
   if [ ${#to_install[@]} -gt 0 ]; then
     sudo apt update
     sudo apt install -y "${to_install[@]}"
@@ -67,6 +67,19 @@ install_debian() {
 
   TMPDIR="$(mktemp -d)"
   trap 'rm -rf "$TMPDIR"' EXIT
+
+  if ! command -v brew >/dev/null 2>&1; then
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  else
+    echo "Homebrew already installed, skipping..."
+  fi
+
+  if ! command -v lazygit >/dev/null 2>&1; then
+    brew install lazygit
+  else
+    echo "lazygit already installed, skipping..."
+  fi
 
   if ! command -v zoxide >/dev/null 2>&1; then
     curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
