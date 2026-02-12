@@ -23,7 +23,7 @@ install_yay() {
 
 install_arch() {
   install_yay
-  sudo pacman -S --noconfirm zoxide fzf fd ripgrep git-delta fastfetch neovim ttf-firacode-nerd vivid lazyvim
+  sudo pacman -S --noconfirm zoxide fzf fd ripgrep git-delta fastfetch neovim ttf-firacode-nerd vivid lazyvim lazygit
 }
 
 install_neovim() {
@@ -92,12 +92,28 @@ install_debian() {
   fi
 
   if ! command -v vivid >/dev/null 2>&1; then
-    VIVID_VERSION="$(curl -s https://api.github.com/repos/sharkdp/vivid/releases/latest | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')"
-    curl -sL "https://github.com/sharkdp/vivid/releases/download/${VIVID_VERSION}/vivid_${VIVID_VERSION}_${DEB_ARCH}.deb" -o "$TMPDIR/vivid.deb"
-    sudo dpkg -i "$TMPDIR/vivid.deb"
-  else
-    echo "vivid already installed, skipping..."
+  TAG=$(curl -s https://api.github.com/repos/sharkdp/vivid/releases/latest | jq -r .tag_name)
+  # find the first .deb whose name contains the arch string
+  ASSET_URL=$(curl -s "https://api.github.com/repos/sharkdp/vivid/releases/tags/${TAG}" \
+    | jq -r --arg arch "$DEB_ARCH" '.assets[] 
+        | select(.name | test("\\.deb$") and (test($arch))) 
+        | .browser_download_url' \
+    | head -n1)
+
+  if [ -z "$ASSET_URL" ]; then
+    echo "No .deb asset found for architecture: $DEB_ARCH in release $TAG" >&2
+    echo "Available assets:" >&2
+    curl -s "https://api.github.com/repos/sharkdp/vivid/releases/tags/${TAG}" \
+      | jq -r '.assets[].name' >&2
+    exit 1
   fi
+
+  echo "Downloading $ASSET_URL ..."
+  curl -fSL "$ASSET_URL" -o "$TMPDIR/vivid.deb"
+  sudo dpkg -i "$TMPDIR/vivid.deb"
+else
+  echo "vivid already installed, skipping..."
+fi
 
   if ! dpkg -l neovim 2>/dev/null | grep -q "^ii"; then
     sudo apt install -y software-properties-common
