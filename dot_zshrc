@@ -4,13 +4,11 @@ bindkey -s "^f" " tmux-sessionizer\n"
 
 WORDCHARS=''
 
-setopt hist_ignore_space hist_ignore_dups auto_cd cd_silent
+setopt hist_ignore_space hist_ignore_dups hist_ignore_all_dups auto_cd auto_pushd cd_silent pushd_ignore_dups
 
 source $ZSHDIR/zshconfig.zsh
-source $ZSHDIR/zshbinds.zsh
 source $ZSHDIR/aliases.zsh
 source $ZSHDIR/zshfunctions.zsh
-source $HOME/.nvm/nvm.sh
 
 if [ -z "$SSH_AUTH_SOCK" ]; then
   eval "$(ssh-agent -s)"
