@@ -11,5 +11,6 @@ gtk-single-instance = false
 cursor-style-blink = true
 shell-integration-features = no-cursor
 shell-integration = zsh
+window-save-state = always
 maximize = true
 clipboard-paste-protection = false
