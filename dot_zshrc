@@ -25,6 +25,7 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$PATH:/home/pa2/.dotnet/tools"
 export GPG_TTY=$(tty)
+export EDITOR="nvim"
 
 zsh_add_plugin "zsh-users/zsh-autosuggestions"
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
