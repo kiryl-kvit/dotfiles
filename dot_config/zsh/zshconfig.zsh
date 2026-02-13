@@ -6,15 +6,6 @@ if command -v vivid >/dev/null 2>&1; then
   export LS_COLORS="$(vivid generate catppuccin-mocha)"
 fi
 
-# Colored man pages
-export LESS_TERMCAP_mb=$'\e[1;32m'     # begin bold
-export LESS_TERMCAP_md=$'\e[1;34m'     # begin blink
-export LESS_TERMCAP_me=$'\e[0m'        # reset bold/blink
-export LESS_TERMCAP_so=$'\e[01;44;33m' # begin reverse video
-export LESS_TERMCAP_se=$'\e[0m'        # reset reverse video
-export LESS_TERMCAP_us=$'\e[1;32m'     # begin underline
-export LESS_TERMCAP_ue=$'\e[0m'        # reset underline
-
 export LESS='-R'
 
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
