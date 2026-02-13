@@ -1,6 +1,4 @@
 export ZSHDIR="$HOME/.config/zsh"
-export GPG_TTY=$(tty)
-bindkey -s "^f" " tmux-sessionizer\n"
 
 # Fix terminal compatibility for SSH sessions from Ghostty
 if [[ -n "$SSH_CONNECTION" && "$TERM" == "xterm-ghostty" ]]; then
@@ -9,11 +7,12 @@ fi
 
 WORDCHARS=''
 
-setopt hist_ignore_space hist_ignore_dups hist_ignore_all_dups auto_cd auto_pushd cd_silent pushd_ignore_dups
+setopt hist_ignore_space hist_ignore_dups hist_ignore_all_dups auto_cd cd_silent
 
-source $ZSHDIR/zshconfig.zsh
-source $ZSHDIR/aliases.zsh
-source $ZSHDIR/zshfunctions.zsh
+source $ZSHDIR/zshfunctions.zsh 
+zsh_add_file $ZSHDIR/zshconfig.zsh
+zsh_add_file $ZSHDIR/zshbinds.zsh
+zsh_add_file $ZSHDIR/aliases.zsh
 
 if [ -z "$SSH_AUTH_SOCK" ]; then
   eval "$(ssh-agent -s)"
@@ -24,33 +23,9 @@ fi
 
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$PATH:/home/pa2/.dotnet/tools"
-
-command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
-
-if command -v fzf &>/dev/null; then
-  # Use --zsh flag for fzf >= 0.48.0, fallback to legacy method for older versions
-  if fzf --zsh &>/dev/null; then
-    source <(fzf --zsh)
-  else
-    # Legacy fzf initialization for older versions
-    [[ -f /usr/share/fzf/key-bindings.zsh ]] && source /usr/share/fzf/key-bindings.zsh
-    [[ -f /usr/share/fzf/completion.zsh ]] && source /usr/share/fzf/completion.zsh
-    [[ -f ~/.fzf.zsh ]] && source ~/.fzf.zsh
-  fi
-  export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix"
-  export FZF_CTRL_T_COMMAND=$FZF_DEFAULT_COMMAND
-  export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix"
-fi
-
-eval "$(starship init zsh)"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-[ -s "/home/pa2/.bun/_bun" ] && source "/home/pa2/.bun/_bun"
+export GPG_TTY=$(tty)
 
 zsh_add_plugin "zsh-users/zsh-autosuggestions"
-bindkey '^y' autosuggest-accept
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
 zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
