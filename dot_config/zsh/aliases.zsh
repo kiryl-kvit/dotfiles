@@ -8,6 +8,7 @@ alias ff='fastfetch'
 alias lg='lazygit'
 alias y='yazi'
 alias oc='opencode'
+alias wf='wifi-tui'
 
 # Coloring
 alias l='ls -lah --color=auto'
