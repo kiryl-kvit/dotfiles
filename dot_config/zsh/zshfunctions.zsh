@@ -26,3 +26,20 @@ function ppf() {
 function pd() {
   pacman -Qq | fzf --multi --preview-window '55%,wrap' --preview 'pacman -Qi {1}' | xargs -ro sudo pacman -Rns
 }
+
+# Press Esc Esc to add/toggle sudo for the current line.
+# If the command line is empty, it pulls the last command from history.
+function sudo-last-command() {
+  if [[ -z $BUFFER ]]; then
+    BUFFER="sudo $(fc -ln -1)"
+  elif [[ $BUFFER == sudo\ * ]]; then
+    BUFFER=${BUFFER#sudo }
+  else
+    BUFFER="sudo $BUFFER"
+  fi
+  CURSOR=${#BUFFER}
+}
+
+if [[ -o interactive ]]; then
+  zle -N sudo-last-command
+fi
