@@ -28,8 +28,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 install_docker_credential_helper() {
-  read -rp "Enter version (default 0.9.3): " VERSION
-  VERSION=${VERSION:-0.9.3}
+  read -rp "Enter version (default 0.9.5): " VERSION
+  VERSION=${VERSION:-0.9.5}
 
   ARCH=$(get_arch)
   case "$ARCH" in
