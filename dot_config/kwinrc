@@ -10,7 +10,7 @@ Rows=1
 TouchpadGesture=false
 
 [Effect-overview]
-BorderActivate=0
+BorderActivate=9
 TouchpadGesture=false
 
 [NightColor]
