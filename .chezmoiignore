@@ -1,2 +1,11 @@
 helpers/
 docs/
+
+# KDE/KWin settings - only apply if KDE is installed
+{{- if not (lookPath "kwin_x11") }}
+{{- if not (lookPath "kwin_wayland") }}
+.config/kwinrc
+.config/kglobalshortcutsrc
+.config/kwinrulesrc
+{{- end }}
+{{- end }}

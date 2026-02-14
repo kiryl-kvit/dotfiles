@@ -1,0 +1,22 @@
+[General]
+count=1
+rules=b674f7d9-b7df-440c-a66a-2b143f12b2b2
+
+[b674f7d9-b7df-440c-a66a-2b143f12b2b2]
+Description=Window settings for Picture in picture
+above=true
+aboverule=2
+layer=above
+layerrule=2
+position=2026,1112
+positionrule=3
+size=512,288
+sizerule=3
+skippager=true
+skippagerrule=2
+skipswitcher=true
+skipswitcherrule=2
+title=Picture in picture
+titlematch=1
+wmclass=brave
+wmclassmatch=1
