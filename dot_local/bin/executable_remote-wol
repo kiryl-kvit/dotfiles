@@ -1,0 +1,12 @@
+#!/bin/bash
+# Usage: remote-wol.sh AA:BB:CC:DD:EE:FF [iface]
+
+MAC="$1"
+
+IF="${2:-wlan0}"
+[ -z "$MAC" ] && { echo "Usage: $0 <MAC> [iface]"; exit 1; }
+
+BRD=$(ip -4 addr show dev "$IF" | awk '/brd/ {for(i=1;i<=NF;i++) if($i=="brd") print $(i+1)}' | cut -d/ -f1)
+[ -z "$BRD" ] && { echo "Cannot determine broadcast for $IF"; exit 2; }
+
+wakeonlan -i "$BRD" "$MAC"
