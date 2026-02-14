@@ -1,5 +1,6 @@
 [ActivityManager]
 _k_friendly_name=Activity Manager
+switch-to-activity-88096edd-abf9-4a5b-b353-e29584b83f53=none,none,Switch to activity "Default"
 switch-to-activity-f24d7586-43d9-45e0-8e64-ee5e963a9fec=none,none,Switch to activity "Default"
 
 [KDE Keyboard Layout Switcher]
@@ -252,5 +253,5 @@ switch to next activity=none,,Switch to Next Activity
 switch to previous activity=none,,Switch to Previous Activity
 toggle do not disturb=none,,Toggle do not disturb
 
-[services][Alacritty.desktop]
-_launch=Ctrl+Alt+T
+[services][org.kde.konsole.desktop]
+_launch=
