@@ -1,6 +1,7 @@
 alias sourcezsh='source ~/.zshrc'
 alias cat='bat --style=plain --paging=never'
 alias ccat='\cat'               # original cat command
+alias ...='cd ../..'
 
 # Tools
 alias v='nvim'
