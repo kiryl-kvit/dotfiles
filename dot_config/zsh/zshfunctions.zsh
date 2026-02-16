@@ -1,6 +1,11 @@
 function zsh_add_file() {
     [ -f "$1" ] && source "$1"
 }
+
+function zsh_append_path() {
+    [ -f "$1" ] && export "$1:$PATH"
+}
+
 function zsh_add_plugin() {
     PLUGIN_NAME=$(echo $1 | cut -d "/" -f 2)
     FALLBACK_NAME=$(echo $PLUGIN_NAME | cut -d "-" -f 2)
@@ -27,8 +32,6 @@ function pd() {
   pacman -Qq | fzf --multi --preview-window '55%,wrap' --preview 'pacman -Qi {1}' | xargs -ro sudo pacman -Rns
 }
 
-# Press Esc Esc to add/toggle sudo for the current line.
-# If the command line is empty, it pulls the last command from history.
 function sudo-last-command() {
   if [[ -z $BUFFER ]]; then
     BUFFER="sudo $(fc -ln -1)"
