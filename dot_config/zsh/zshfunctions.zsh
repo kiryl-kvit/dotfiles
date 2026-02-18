@@ -3,7 +3,7 @@ function zsh_add_file() {
 }
 
 function zsh_append_path() {
-    [ -f "$1" ] && export "$1:$PATH"
+    [ -d "$1" ] && export PATH="$PATH:$1"
 }
 
 function zsh_add_plugin() {
