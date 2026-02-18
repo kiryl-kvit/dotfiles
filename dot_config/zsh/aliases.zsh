@@ -10,6 +10,7 @@ alias lg='lazygit'
 alias y='yazi'
 alias oc='opencode'
 alias wf='wifitui'
+alias gi='git-ignore'
 
 # Coloring
 alias l='ls -lah --color=auto'
