@@ -14,3 +14,4 @@ shell-integration = zsh
 window-save-state = always
 maximize = true
 clipboard-paste-protection = false
+clipboard-read = allow
