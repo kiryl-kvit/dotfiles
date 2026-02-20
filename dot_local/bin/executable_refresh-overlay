@@ -16,6 +16,8 @@ Works on:
                (_NET_WM_STATE_ABOVE for always-on-top)
 
 GPU support: AMD (amdgpu), Intel (i915/xe), NVIDIA (nouveau & proprietary ≥495).
+    On NVIDIA proprietary (no vblank ioctl), falls back to polling CRTC mode
+    vrefresh via libdrm — no real-time VRR tracking in that case.
 
 Usage:
     python3 refresh-overlay.py [OPTIONS]
@@ -144,11 +146,46 @@ def _find_drm_device() -> str | None:
     return cards[0] if cards else None
 
 
+def _libdrm_get_vrefresh(drm_fd: int, libdrm: ctypes.CDLL) -> float:
+    """Return the vrefresh of the first active CRTC, or 0.0."""
+    res = libdrm.drmModeGetResources(drm_fd)
+    if not res:
+        return 0.0
+
+    result = 0.0
+    try:
+        count_crtcs = ctypes.c_int.from_address(res + 16).value
+        crtcs_ptr = ctypes.c_void_p.from_address(res + 24).value
+        if not crtcs_ptr or count_crtcs <= 0:
+            return 0.0
+
+        for i in range(count_crtcs):
+            crtc_id = ctypes.c_uint32.from_address(crtcs_ptr + i * 4).value
+            crtc_ptr = libdrm.drmModeGetCrtc(drm_fd, crtc_id)
+            if not crtc_ptr:
+                continue
+            # drmModeCrtc: mode_valid is at offset 24, mode starts at 28
+            mode_valid = ctypes.c_int.from_address(crtc_ptr + 24).value
+            if mode_valid:
+                # drmModeModeInfo: vrefresh (uint32) is at offset 24 within mode
+                vrefresh = ctypes.c_uint32.from_address(
+                    crtc_ptr + 28 + 24
+                ).value
+                libdrm.drmModeFreeCrtc(crtc_ptr)
+                if vrefresh > 0:
+                    result = float(vrefresh)
+                    break
+            else:
+                libdrm.drmModeFreeCrtc(crtc_ptr)
+    finally:
+        libdrm.drmModeFreeResources(res)
+    return result
+
+
 class VblankMonitor:
     """Measures real display refresh rate via DRM WAIT_VBLANK ioctl.
-
-    Works across AMD (amdgpu/radeon), Intel (i915/xe), and NVIDIA
-    (nouveau, and proprietary >=495 which exposes /dev/dri/card*).
+    Falls back to polling CRTC mode vrefresh when the ioctl isn't supported
+    (NVIDIA proprietary).
     """
 
     def __init__(self, drm_device: str | None = None, window_size: int = 30):
@@ -187,6 +224,51 @@ class VblankMonitor:
         if self._thread:
             self._thread.join(timeout=2)
 
+    # -- libdrm fallback (NVIDIA etc.) ------------------------------------
+
+    def _run_libdrm_fallback(self) -> None:
+        """Poll CRTC mode vrefresh when vblank ioctl is unavailable."""
+        print(
+            f"WAIT_VBLANK not supported on {self._device}, "
+            f"falling back to CRTC mode polling.",
+            file=sys.stderr,
+        )
+
+        try:
+            libdrm = ctypes.CDLL("libdrm.so.2")
+        except OSError:
+            with self._lock:
+                self._error = "libdrm.so.2 not found, cannot query refresh rate"
+            return
+
+        libdrm.drmModeGetResources.restype = ctypes.c_void_p
+        libdrm.drmModeGetResources.argtypes = [ctypes.c_int]
+        libdrm.drmModeGetCrtc.restype = ctypes.c_void_p
+        libdrm.drmModeGetCrtc.argtypes = [ctypes.c_int, ctypes.c_uint32]
+        libdrm.drmModeFreeCrtc.restype = None
+        libdrm.drmModeFreeCrtc.argtypes = [ctypes.c_void_p]
+        libdrm.drmModeFreeResources.restype = None
+        libdrm.drmModeFreeResources.argtypes = [ctypes.c_void_p]
+
+        try:
+            fd = os.open(self._device, os.O_RDWR | os.O_NONBLOCK)
+        except OSError as exc:
+            with self._lock:
+                self._error = f"Cannot open {self._device}: {exc}"
+            return
+
+        try:
+            while not self._stop.is_set():
+                vrefresh = _libdrm_get_vrefresh(fd, libdrm)
+                if vrefresh > 0:
+                    with self._lock:
+                        self._hz = vrefresh
+                self._stop.wait(1.0)  # poll every second
+        finally:
+            os.close(fd)
+
+    # -- vblank ioctl timing -----------------------------------------------
+
     def _run(self) -> None:
         try:
             fd = os.open(self._device, os.O_RDWR | os.O_NONBLOCK)
@@ -201,6 +283,15 @@ class VblankMonitor:
         except OSError as exc:
             with self._lock:
                 self._error = f"Cannot open {self._device}: {exc}"
+            return
+
+        # Probe whether WAIT_VBLANK works on this driver at all.
+        buf = struct.pack("IIQ", _DRM_VBLANK_RELATIVE, 1, 0).ljust(24, b"\x00")
+        try:
+            fcntl.ioctl(fd, _DRM_IOCTL_WAIT_VBLANK, buf)
+        except OSError:
+            os.close(fd)
+            self._run_libdrm_fallback()
             return
 
         last_ts = None
