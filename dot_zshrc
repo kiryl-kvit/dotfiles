@@ -25,6 +25,7 @@ fi
 
 zsh_append_path "$HOME/.local/bin"
 zsh_append_path "$HOME/.dotnet/tools"
+zsh_append_path "/home/linuxbrew/.linuxbrew/bin"
 export GPG_TTY=$(tty)
 export EDITOR="nvim"
 
