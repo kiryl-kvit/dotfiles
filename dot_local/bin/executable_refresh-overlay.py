@@ -1,0 +1,531 @@
+#!/usr/bin/env python3
+"""
+Refresh Rate Overlay — portable, always-on-top display refresh-rate monitor.
+
+Measures the *actual* display refresh rate by timing DRM vblank interrupts in
+a background thread, so VRR / Adaptive Sync changes are reflected in real time
+and the overlay itself does not influence the measurement.
+
+Works on:
+  • Wayland  — KDE Plasma, Sway, Hyprland, wlroots-based compositors
+               (uses gtk4-layer-shell for a true overlay above everything)
+  • Wayland  — GNOME (layer-shell unsupported; runs as a normal top-level
+               window — use GNOME Extensions or an "Always on Top" shortcut
+               to keep it above fullscreen windows)
+  • X11      — any desktop (GNOME, KDE, XFCE, i3, …)
+               (_NET_WM_STATE_ABOVE for always-on-top)
+
+GPU support: AMD (amdgpu), Intel (i915/xe), NVIDIA (nouveau & proprietary ≥495).
+
+Usage:
+    python3 refresh-overlay.py [OPTIONS]
+
+Dependencies:
+    • python3, PyGObject (gi), GTK 4
+    • gtk4-layer-shell   (optional — only needed for Wayland overlay layer)
+    • Access to /dev/dri/card* (user must be in the 'video' group)
+
+Options: run with --help to see all flags.
+"""
+
+from __future__ import annotations
+
+import argparse
+import collections
+import ctypes
+import ctypes.util
+import fcntl
+import glob as glob_mod
+import os
+import signal
+import struct
+import sys
+import threading
+
+# ---------------------------------------------------------------------------
+# 1. Optionally preload gtk4-layer-shell (must happen before GTK/Wayland init)
+# ---------------------------------------------------------------------------
+
+_LAYER_SHELL_AVAILABLE = False
+_LAYER_SHELL_PATHS = [
+    "/usr/lib/libgtk4-layer-shell.so",
+    "/usr/lib64/libgtk4-layer-shell.so",
+    "/usr/lib/x86_64-linux-gnu/libgtk4-layer-shell.so",
+    "/usr/lib/aarch64-linux-gnu/libgtk4-layer-shell.so",
+]
+
+
+def _preload_layer_shell() -> bool:
+    """Try to preload the gtk4-layer-shell shared library.
+    Returns True on success."""
+    if "gtk4-layer-shell" in os.environ.get("LD_PRELOAD", ""):
+        return True
+    for path in _LAYER_SHELL_PATHS:
+        if os.path.exists(path):
+            try:
+                ctypes.CDLL(path, mode=ctypes.RTLD_GLOBAL)
+                return True
+            except OSError:
+                continue
+    return False
+
+
+_preloaded = _preload_layer_shell()
+
+# ---------------------------------------------------------------------------
+# 2. GTK / GI imports
+# ---------------------------------------------------------------------------
+
+import gi  # noqa: E402
+
+gi.require_version("Gdk", "4.0")
+gi.require_version("Gtk", "4.0")
+
+from gi.repository import Gdk, GLib, Gtk  # noqa: E402
+
+# Try to import gtk4-layer-shell bindings
+Gtk4LayerShell = None
+if _preloaded:
+    try:
+        gi.require_version("Gtk4LayerShell", "1.0")
+        from gi.repository import Gtk4LayerShell as _LS  # noqa: E402
+
+        Gtk4LayerShell = _LS
+        _LAYER_SHELL_AVAILABLE = True
+    except (ValueError, ImportError):
+        pass
+
+# ---------------------------------------------------------------------------
+# 3. Detect session type
+# ---------------------------------------------------------------------------
+
+
+def _detect_session_type() -> str:
+    """Return 'wayland', 'x11', or 'unknown'."""
+    st = os.environ.get("XDG_SESSION_TYPE", "").lower()
+    if st in ("wayland", "x11"):
+        return st
+    if os.environ.get("WAYLAND_DISPLAY"):
+        return "wayland"
+    if os.environ.get("DISPLAY"):
+        return "x11"
+    return "unknown"
+
+
+SESSION_TYPE = _detect_session_type()
+
+# ---------------------------------------------------------------------------
+# 4. DRM vblank monitor (runs in a background thread)
+# ---------------------------------------------------------------------------
+
+# DRM_IOCTL_WAIT_VBLANK: _IOWR('d', 0x3a, 24)
+_DRM_IOCTL_WAIT_VBLANK = (3 << 30) | (24 << 16) | (ord("d") << 8) | 0x3A
+_DRM_VBLANK_RELATIVE = 0x1
+
+
+def _find_drm_device() -> str | None:
+    """Auto-detect the first DRM card that has a connected display output."""
+    for card_path in sorted(glob_mod.glob("/dev/dri/card*")):
+        card_name = os.path.basename(card_path)
+        sysfs = f"/sys/class/drm/{card_name}"
+        if not os.path.isdir(sysfs):
+            continue
+        for entry in sorted(os.listdir(sysfs)):
+            status_file = os.path.join(sysfs, entry, "status")
+            if os.path.isfile(status_file):
+                try:
+                    with open(status_file) as f:
+                        if f.read().strip() == "connected":
+                            return card_path
+                except OSError:
+                    continue
+    # Fallback: just return the first card that exists
+    cards = sorted(glob_mod.glob("/dev/dri/card*"))
+    return cards[0] if cards else None
+
+
+class VblankMonitor:
+    """Measures real display refresh rate via DRM WAIT_VBLANK ioctl.
+
+    Works across AMD (amdgpu/radeon), Intel (i915/xe), and NVIDIA
+    (nouveau, and proprietary >=495 which exposes /dev/dri/card*).
+    """
+
+    def __init__(self, drm_device: str | None = None, window_size: int = 30):
+        self._device = drm_device or _find_drm_device()
+        if not self._device:
+            raise RuntimeError(
+                "No DRM device found.  Make sure /dev/dri/card* exists and "
+                "your user is in the 'video' group."
+            )
+        self._window_size = window_size
+        self._intervals: collections.deque[float] = collections.deque(
+            maxlen=window_size
+        )
+        self._hz = 0.0
+        self._lock = threading.Lock()
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._error: str | None = None
+
+    @property
+    def hz(self) -> float:
+        with self._lock:
+            return self._hz
+
+    @property
+    def error(self) -> str | None:
+        with self._lock:
+            return self._error
+
+    def start(self) -> None:
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stop.set()
+        if self._thread:
+            self._thread.join(timeout=2)
+
+    def _run(self) -> None:
+        try:
+            fd = os.open(self._device, os.O_RDWR | os.O_NONBLOCK)
+        except PermissionError:
+            with self._lock:
+                self._error = (
+                    f"Permission denied opening {self._device}.  "
+                    f"Add your user to the 'video' group:\n"
+                    f"  sudo usermod -aG video $USER"
+                )
+            return
+        except OSError as exc:
+            with self._lock:
+                self._error = f"Cannot open {self._device}: {exc}"
+            return
+
+        last_ts = None
+        try:
+            while not self._stop.is_set():
+                buf = struct.pack("IIQ", _DRM_VBLANK_RELATIVE, 1, 0)
+                buf = buf.ljust(24, b"\x00")
+                try:
+                    result = fcntl.ioctl(fd, _DRM_IOCTL_WAIT_VBLANK, buf)
+                except OSError:
+                    self._stop.wait(0.01)
+                    continue
+
+                _, _, tv_sec, tv_usec = struct.unpack("IIqq", result)
+                ts = tv_sec + tv_usec / 1_000_000.0
+
+                if last_ts is not None:
+                    interval = ts - last_ts
+                    if 0 < interval < 0.1:  # discard > 100 ms gaps
+                        self._intervals.append(interval)
+                        if len(self._intervals) >= 5:
+                            avg = sum(self._intervals) / len(self._intervals)
+                            with self._lock:
+                                self._hz = 1.0 / avg
+                last_ts = ts
+        finally:
+            os.close(fd)
+
+
+# ---------------------------------------------------------------------------
+# 5. X11 always-on-top helper (used when layer-shell is unavailable)
+# ---------------------------------------------------------------------------
+
+_libX11 = None
+
+
+def _get_libX11():
+    global _libX11
+    if _libX11 is None:
+        name = ctypes.util.find_library("X11")
+        if name:
+            try:
+                _libX11 = ctypes.CDLL(name)
+            except OSError:
+                _libX11 = False
+        else:
+            _libX11 = False
+    return _libX11 if _libX11 else None
+
+
+def _x11_set_above(xid: int) -> None:
+    """Send a _NET_WM_STATE_ABOVE client message to the root window so the
+    window manager keeps our overlay on top.  Works on any EWMH-compliant WM."""
+    xlib = _get_libX11()
+    if xlib is None:
+        return
+    display_name = os.environ.get("DISPLAY", ":0").encode()
+    dpy = xlib.XOpenDisplay(display_name)
+    if not dpy:
+        return
+
+    try:
+        xlib.XInternAtom.restype = ctypes.c_ulong
+        wm_state = xlib.XInternAtom(dpy, b"_NET_WM_STATE", False)
+        wm_above = xlib.XInternAtom(dpy, b"_NET_WM_STATE_ABOVE", False)
+        root = xlib.XDefaultRootWindow(dpy)
+
+        # XEvent (ClientMessage) — 96 bytes on 64-bit
+        evt = (ctypes.c_char * 96)()
+        # type = ClientMessage (33)
+        struct.pack_into("i", evt, 0, 33)
+        # serial, send_event, display — skip (offsets 8-23)
+        # window (offset 32 on 64-bit)
+        struct.pack_into("Q", evt, 32, xid)
+        # message_type (offset 40)
+        struct.pack_into("Q", evt, 40, wm_state)
+        # format (offset 48)
+        struct.pack_into("i", evt, 48, 32)
+        # data.l[0] = _NET_WM_STATE_ADD (1)
+        struct.pack_into("Q", evt, 56, 1)
+        # data.l[1] = _NET_WM_STATE_ABOVE
+        struct.pack_into("Q", evt, 64, wm_above)
+
+        _SubstructureRedirect = 1 << 20
+        _SubstructureNotify = 1 << 19
+        mask = _SubstructureRedirect | _SubstructureNotify
+        xlib.XSendEvent(dpy, root, False, mask, evt)
+        xlib.XFlush(dpy)
+    finally:
+        xlib.XCloseDisplay(dpy)
+
+
+# ---------------------------------------------------------------------------
+# 6. GTK4 overlay application
+# ---------------------------------------------------------------------------
+
+
+class RefreshOverlay(Gtk.Application):
+    def __init__(self, args: argparse.Namespace):
+        super().__init__(application_id="dev.refresh.overlay")
+        self.args = args
+        self._monitor: VblankMonitor | None = None
+
+    # -- activation --------------------------------------------------------
+
+    def do_activate(self) -> None:
+        # Start vblank monitor
+        try:
+            self._monitor = VblankMonitor(
+                drm_device=self.args.drm_device, window_size=30
+            )
+            self._monitor.start()
+        except RuntimeError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            sys.exit(1)
+
+        win = Gtk.ApplicationWindow(application=self)
+        win.set_decorated(False)
+        win.set_resizable(False)
+
+        # --- Try layer-shell (Wayland overlays) ---------------------------
+        use_layer_shell = (
+            _LAYER_SHELL_AVAILABLE
+            and SESSION_TYPE == "wayland"
+            and Gtk4LayerShell is not None
+        )
+
+        if use_layer_shell:
+            self._setup_layer_shell(win)
+        else:
+            self._setup_plain_window(win)
+
+        # --- Widget -------------------------------------------------------
+        self.label = Gtk.Label()
+        self.label.set_markup(self._format_label(0.0))
+        win.set_child(self.label)
+
+        # --- CSS ----------------------------------------------------------
+        css = f"""
+            window {{
+                background-color: rgba(0, 0, 0, {self.args.opacity});
+                border-radius: 8px;
+                padding: 4px 10px;
+            }}
+            label {{
+                color: #00ff88;
+                font-family: monospace;
+                font-size: {self.args.font_size}pt;
+                font-weight: bold;
+            }}
+        """.encode()
+        provider = Gtk.CssProvider()
+        provider.load_from_data(css)
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+        )
+
+        win.present()
+
+        # --- X11: post-map always-on-top ----------------------------------
+        if not use_layer_shell and SESSION_TYPE == "x11":
+            # Defer until the surface is mapped so we have a valid XID
+            GLib.timeout_add(100, self._apply_x11_above, win)
+
+        # --- Periodic label update ----------------------------------------
+        GLib.timeout_add(self.args.update_ms, self._update_label)
+
+    # -- layer-shell setup (Wayland) ---------------------------------------
+
+    def _setup_layer_shell(self, win: Gtk.ApplicationWindow) -> None:
+        assert Gtk4LayerShell is not None
+        Gtk4LayerShell.init_for_window(win)
+        Gtk4LayerShell.set_layer(win, Gtk4LayerShell.Layer.OVERLAY)
+        Gtk4LayerShell.set_namespace(win, "refresh-overlay")
+        Gtk4LayerShell.set_keyboard_mode(
+            win, Gtk4LayerShell.KeyboardMode.NONE
+        )
+
+        corner = self.args.corner
+        Gtk4LayerShell.set_anchor(
+            win, Gtk4LayerShell.Edge.TOP, "top" in corner
+        )
+        Gtk4LayerShell.set_anchor(
+            win, Gtk4LayerShell.Edge.BOTTOM, "bottom" in corner
+        )
+        Gtk4LayerShell.set_anchor(
+            win, Gtk4LayerShell.Edge.LEFT, "left" in corner
+        )
+        Gtk4LayerShell.set_anchor(
+            win, Gtk4LayerShell.Edge.RIGHT, "right" in corner
+        )
+
+        if "top" in corner:
+            Gtk4LayerShell.set_margin(
+                win, Gtk4LayerShell.Edge.TOP, self.args.margin_y
+            )
+        else:
+            Gtk4LayerShell.set_margin(
+                win, Gtk4LayerShell.Edge.BOTTOM, self.args.margin_y
+            )
+        if "left" in corner:
+            Gtk4LayerShell.set_margin(
+                win, Gtk4LayerShell.Edge.LEFT, self.args.margin_x
+            )
+        else:
+            Gtk4LayerShell.set_margin(
+                win, Gtk4LayerShell.Edge.RIGHT, self.args.margin_x
+            )
+
+    # -- plain-window setup (X11, or Wayland without layer-shell) ----------
+
+    def _setup_plain_window(self, win: Gtk.ApplicationWindow) -> None:
+        # Position hint via default size + gravity isn't great in GTK4,
+        # but we can at least make it small and let the user move it.
+        win.set_default_size(1, 1)
+        # On X11 the _NET_WM_STATE_ABOVE message handles always-on-top.
+        # On Wayland without layer-shell (GNOME), we print a hint.
+        if SESSION_TYPE == "wayland" and not _LAYER_SHELL_AVAILABLE:
+            print(
+                "Note: gtk4-layer-shell is not available.  The overlay will "
+                "run as a normal window.\n"
+                "On GNOME you can keep it on top with the window menu or a "
+                "keyboard shortcut (Super+click → Always on Top).",
+                file=sys.stderr,
+            )
+
+    # -- X11 always-on-top -------------------------------------------------
+
+    @staticmethod
+    def _apply_x11_above(win: Gtk.ApplicationWindow) -> bool:
+        surface = win.get_surface()
+        if surface is None:
+            return True  # retry
+
+        try:
+            gi.require_version("GdkX11", "4.0")
+            from gi.repository import GdkX11  # noqa: F811
+
+            if isinstance(surface, GdkX11.X11Surface):
+                xid = surface.get_xid()
+                surface.set_skip_taskbar_hint(True)
+                surface.set_skip_pager_hint(True)
+                _x11_set_above(xid)
+        except (ValueError, ImportError, AttributeError):
+            pass
+        return False  # don't repeat
+
+    # -- label updates -----------------------------------------------------
+
+    def _update_label(self) -> bool:
+        if self._monitor and self._monitor.error:
+            self.label.set_markup(
+                f'<span font_family="monospace" color="#ff4444">'
+                f"ERR</span>"
+            )
+            # Print once
+            err = self._monitor.error
+            if err:
+                print(err, file=sys.stderr)
+            return False  # stop timer
+        hz = self._monitor.hz if self._monitor else 0.0
+        self.label.set_markup(self._format_label(hz))
+        return True
+
+    @staticmethod
+    def _format_label(hz: float) -> str:
+        if hz < 1.0:
+            return '<span font_family="monospace">-- Hz</span>'
+        return f'<span font_family="monospace">{hz:.1f} Hz</span>'
+
+    # -- shutdown ----------------------------------------------------------
+
+    def do_shutdown(self) -> None:
+        if self._monitor:
+            self._monitor.stop()
+        Gtk.Application.do_shutdown(self)
+
+
+# ---------------------------------------------------------------------------
+# 7. CLI
+# ---------------------------------------------------------------------------
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Always-on-top display refresh rate overlay",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  %(prog)s                          # top-right, auto-detect GPU\n"
+            "  %(prog)s --corner bottom-left      # bottom-left corner\n"
+            "  %(prog)s --font-size 18 --opacity 0.9\n"
+            "  %(prog)s --drm-device /dev/dri/card0\n"
+        ),
+    )
+    parser.add_argument(
+        "--corner",
+        choices=["top-left", "top-right", "bottom-left", "bottom-right"],
+        default="top-right",
+    )
+    parser.add_argument("--margin-x", type=int, default=16)
+    parser.add_argument("--margin-y", type=int, default=16)
+    parser.add_argument("--font-size", type=int, default=14)
+    parser.add_argument("--update-ms", type=int, default=250)
+    parser.add_argument("--opacity", type=float, default=0.7)
+    parser.add_argument(
+        "--drm-device",
+        default=None,
+        help="DRM device path (default: auto-detect, e.g. /dev/dri/card1)",
+    )
+    args = parser.parse_args()
+
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    # Print diagnostics
+    dev = args.drm_device or _find_drm_device() or "none found"
+    print(f"Session: {SESSION_TYPE}", file=sys.stderr)
+    print(f"Layer shell: {'yes' if _LAYER_SHELL_AVAILABLE else 'no'}", file=sys.stderr)
+    print(f"DRM device: {dev}", file=sys.stderr)
+
+    app = RefreshOverlay(args)
+    sys.exit(app.run([]))
+
+
+if __name__ == "__main__":
+    main()
