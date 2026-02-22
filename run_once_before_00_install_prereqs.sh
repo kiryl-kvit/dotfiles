@@ -23,7 +23,7 @@ install_yay() {
 
 install_arch() {
   install_yay
-  sudo pacman -S --noconfirm zoxide fzf fd ripgrep git-delta fastfetch neovim ttf-firacode-nerd vivid lazygit
+  sudo pacman -S --noconfirm zoxide fzf fd ripgrep git-delta fastfetch neovim ttf-firacode-nerd vivid lazygit wl-clipboard
 }
 
 install_debian() {
