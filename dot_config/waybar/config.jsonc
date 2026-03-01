@@ -5,6 +5,8 @@
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["hyprland/window"],
   "modules-right": [
+    "network",
+    "custom/divider",
     "cpu",
     "custom/divider",
     "wireplumber",
@@ -19,17 +21,26 @@
     "custom/divider",
     "clock",
   ],
+  "network": {
+    "format-wifi": "<span font_size='20pt' rise='-3072'>{icon}</span> {essid}",
+    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+    "format-ethernet": "󰈀 {ipaddr}",
+    "format-disconnected": "󰤭 ",
+    "tooltip-format-wifi": "{essid} ({signalStrength}%)",
+    "on-click": "ghostty -e nmtui",
+    "interval": 2,
+  },
   "cpu": {
-    "format": "{icon}",
+    "format": "<span font_size='20pt' rise='-3072'>󰍛</span> {icon}",
     "format-icons": ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"],
     "interval": 2,
   },
   "backlight": {
-    "format": "{icon} {percent}%",
+    "format": "<span font_size='20pt' rise='-3072'>{icon}</span> {percent}%",
     "format-icons": ["󰃞", "󰃟", "󰃠"],
   },
   "wireplumber": {
-    "format": "{icon} {volume}%",
+    "format": "<span font_size='20pt' rise='-3072'>{icon}</span> {volume}%",
     "format-muted": "󰝟 muted",
     "format-icons": ["󰕿", "󰖀", "󰕾"],
     "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
