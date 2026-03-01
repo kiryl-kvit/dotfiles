@@ -1,0 +1,8 @@
+{
+  "wireplumber": {
+    "format": "<span font_size='20pt' rise='-3072'>{icon}</span> {volume}%",
+    "format-muted": "󰝟 muted",
+    "format-icons": ["󰕿", "󰖀", "󰕾"],
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+  },
+}

@@ -1,0 +1,6 @@
+{
+  "backlight": {
+    "format": "<span font_size='20pt' rise='-3072'>{icon}</span> {percent}%",
+    "format-icons": ["󰃞", "󰃟", "󰃠"],
+  },
+}

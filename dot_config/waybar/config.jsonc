@@ -1,4 +1,16 @@
 {
+  "include": [
+    "~/.config/waybar/modules/network.jsonc",
+    "~/.config/waybar/modules/cpu.jsonc",
+    "~/.config/waybar/modules/backlight.jsonc",
+    "~/.config/waybar/modules/wireplumber.jsonc",
+    "~/.config/waybar/modules/divider.jsonc",
+    "~/.config/waybar/modules/language.jsonc",
+    "~/.config/waybar/modules/workspaces.jsonc",
+    "~/.config/waybar/modules/battery.jsonc",
+    "~/.config/waybar/modules/power-profile.jsonc",
+    "~/.config/waybar/modules/clock.jsonc",
+  ],
   "layer": "top",
   "reload_style_on_change": true,
   "height": 40,
@@ -21,66 +33,4 @@
     "custom/divider",
     "clock",
   ],
-  "network": {
-    "format-wifi": "<span font_size='20pt' rise='-3072'>{icon}</span> {essid}",
-    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
-    "format-ethernet": "󰈀 {ipaddr}",
-    "format-disconnected": "󰤭 ",
-    "tooltip-format-wifi": "{essid} ({signalStrength}%)",
-    "on-click": "ghostty -e nmtui",
-    "interval": 2,
-  },
-  "cpu": {
-    "format": "<span font_size='20pt' rise='-3072'>󰍛</span> {icon}",
-    "format-icons": ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"],
-    "interval": 2,
-  },
-  "backlight": {
-    "format": "<span font_size='20pt' rise='-3072'>{icon}</span> {percent}%",
-    "format-icons": ["󰃞", "󰃟", "󰃠"],
-  },
-  "wireplumber": {
-    "format": "<span font_size='20pt' rise='-3072'>{icon}</span> {volume}%",
-    "format-muted": "󰝟 muted",
-    "format-icons": ["󰕿", "󰖀", "󰕾"],
-    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
-  },
-  "custom/divider": {
-    "format": " ",
-    "interval": "once",
-  },
-  "hyprland/language": {
-    "format": "{}",
-    "format-en": "en",
-    "format-ru": "ru",
-  },
-  "hyprland/workspaces": {
-    "persistent-workspaces": {
-      "*": 5,
-    },
-  },
-  "battery": {
-    "format": "{capacity}% <span font_size='24pt' rise='-4096'>{icon}</span>",
-    "states": {
-      "warning": 30,
-      "critical": 15,
-    },
-    "format-icons": ["", "", "", "", ""],
-  },
-  "custom/power-profile": {
-    "format": "<span font_size='20pt' rise='-3072'>{icon}</span>",
-    "format-icons": {
-      "balanced": "󰗑",
-      "performance": "󱐌",
-      "power-saver": "󰌪",
-    },
-    "return-type": "json",
-    "exec": "profile=$(powerprofilesctl get) && printf '{\"text\":\"%s\",\"alt\":\"%s\",\"class\":\"%s\"}' \"$profile\" \"$profile\" \"$profile\"",
-    "on-click": "current=$(powerprofilesctl get); case $current in balanced) powerprofilesctl set performance ;; performance) powerprofilesctl set power-saver ;; power-saver) powerprofilesctl set balanced ;; esac",
-    "interval": 2,
-    "tooltip": false,
-  },
-  "clock": {
-    "format-alt": "{:%a, %d. %b  %H:%M}",
-  },
 }
