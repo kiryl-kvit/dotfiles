@@ -13,10 +13,6 @@ source $ZSHDIR/zshfunctions.zsh
 zsh_add_file $ZSHDIR/zshconfig.zsh
 zsh_add_file $ZSHDIR/zshbinds.zsh
 zsh_add_file $ZSHDIR/aliases.zsh
-zsh_append_path "$HOME/.local/bin"
-zsh_append_path "$HOME/.dotnet/tools"
-zsh_append_path "/home/linuxbrew/.linuxbrew/bin"
-
 zsh_add_file $ZSHDIR/zshintegrations.zsh
 zsh_add_file $HOME/.nvm/nvm.sh
 
@@ -26,6 +22,10 @@ if [ -z "$SSH_AUTH_SOCK" ]; then
     [[ -f "$key" && "$key" != *.pub ]] && ssh-add "$key" 2>/dev/null
   done
 fi
+
+zsh_append_path "$HOME/.local/bin"
+zsh_append_path "$HOME/.dotnet/tools"
+zsh_append_path "/home/linuxbrew/.linuxbrew/bin"
 export GPG_TTY=$(tty)
 export EDITOR="nvim"
 

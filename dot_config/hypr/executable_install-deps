@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-sudo pacman -S hyprpolkitagent
+sudo pacman -S hyprpolkitagent waybar rofi
