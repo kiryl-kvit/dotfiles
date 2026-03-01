@@ -1,0 +1,8 @@
+#custom-divider {
+  border-left: 1px solid currentColor;
+  margin: 10px 8px;
+  min-width: 1px;
+  min-height: 20px;
+  padding: 0;
+  font-size: 0;
+}

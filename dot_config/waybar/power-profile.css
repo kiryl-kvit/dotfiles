@@ -1,0 +1,14 @@
+#custom-power-profile {
+}
+
+#custom-power-profile.performance {
+  color: #f38ba8;
+}
+
+#custom-power-profile.balanced {
+  color: #a6e3a1;
+}
+
+#custom-power-profile.power-saver {
+  color: #89b4fa;
+}

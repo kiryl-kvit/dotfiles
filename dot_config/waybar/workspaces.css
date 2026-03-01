@@ -1,0 +1,9 @@
+#workspaces button {
+  font-weight: normal;
+  color: inherit;
+}
+
+#workspaces button.active {
+  font-weight: bold;
+  color: #89b4fa;
+}
