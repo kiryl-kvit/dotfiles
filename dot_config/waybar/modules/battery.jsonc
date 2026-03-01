@@ -1,6 +1,6 @@
 {
   "battery": {
-    "format": "<span font_size='24pt' rise='-4096'>{icon}</span> {capacity}%",
+    "format": "<span font_size='24pt' rise='-4096'>{icon}</span> <span foreground='#cdd6f4'>{capacity}%</span>",
     "states": {
       "warning": 30,
       "critical": 15,
