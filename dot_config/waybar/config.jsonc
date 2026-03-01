@@ -7,6 +7,8 @@
   "modules-right": [
     "wireplumber",
     "custom/divider",
+    "backlight",
+    "custom/divider",
     "hyprland/language",
     "custom/divider",
     "custom/power-profile",
@@ -15,6 +17,10 @@
     "custom/divider",
     "clock",
   ],
+  "backlight": {
+    "format": "{icon} {percent}%",
+    "format-icons": ["󰃞", "󰃟", "󰃠"],
+  },
   "wireplumber": {
     "format": "{icon} {volume}%",
     "format-muted": "󰝟 muted",
