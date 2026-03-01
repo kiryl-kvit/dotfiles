@@ -1,0 +1,11 @@
+#battery {
+  margin-right: 8px;
+}
+
+#battery.warning {
+  background-color: yellow
+}
+
+#battery.critical {
+  background-color: red
+}

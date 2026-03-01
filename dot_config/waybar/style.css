@@ -1,0 +1,6 @@
+window#waybar {
+  font-size: 18px
+}
+
+@import "battery.css";
+@import "clock.css";
