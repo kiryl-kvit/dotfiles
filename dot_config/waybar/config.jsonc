@@ -5,6 +5,8 @@
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["hyprland/window"],
   "modules-right": [
+    "wireplumber",
+    "custom/divider",
     "hyprland/language",
     "custom/divider",
     "custom/power-profile",
@@ -13,6 +15,12 @@
     "custom/divider",
     "clock",
   ],
+  "wireplumber": {
+    "format": "{icon} {volume}%",
+    "format-muted": "󰝟 muted",
+    "format-icons": ["󰕿", "󰖀", "󰕾"],
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+  },
   "custom/divider": {
     "format": " ",
     "interval": "once",

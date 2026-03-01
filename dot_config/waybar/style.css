@@ -4,6 +4,7 @@ window#waybar {
 
 @import "divider.css";
 @import "battery.css";
+@import "clock.css";
 @import "workspaces.css";
 @import "hyprland-window.css";
 @import "power-profile.css";
