@@ -6,3 +6,4 @@ window#waybar {
 @import "battery.css";
 @import "workspaces.css";
 @import "hyprland-window.css";
+@import "power-profile.css";

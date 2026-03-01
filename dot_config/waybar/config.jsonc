@@ -4,7 +4,15 @@
   "height": 40,
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["hyprland/window"],
-  "modules-right": ["hyprland/language", "custom/divider", "battery", "custom/divider", "clock"],
+  "modules-right": [
+    "hyprland/language",
+    "custom/divider",
+    "custom/power-profile",
+    "custom/divider",
+    "battery",
+    "custom/divider",
+    "clock",
+  ],
   "custom/divider": {
     "format": " ",
     "interval": "once",
@@ -21,6 +29,19 @@
       "critical": 15,
     },
     "format-icons": ["", "", "", "", ""],
+  },
+  "custom/power-profile": {
+    "format": "<span font_size='20pt' rise='-3072'>{icon}</span>",
+    "format-icons": {
+      "balanced": "󰗑",
+      "performance": "󱐌",
+      "power-saver": "󰌪",
+    },
+    "return-type": "json",
+    "exec": "profile=$(powerprofilesctl get) && printf '{\"text\":\"%s\",\"alt\":\"%s\",\"class\":\"%s\"}' \"$profile\" \"$profile\" \"$profile\"",
+    "on-click": "current=$(powerprofilesctl get); case $current in balanced) powerprofilesctl set performance ;; performance) powerprofilesctl set power-saver ;; power-saver) powerprofilesctl set balanced ;; esac",
+    "interval": 2,
+    "tooltip": false,
   },
   "clock": {
     "format-alt": "{:%a, %d. %b  %H:%M}",
