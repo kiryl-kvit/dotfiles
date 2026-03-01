@@ -1,0 +1,8 @@
+{
+  "memory": {
+    "format": "<span font_size='20pt' rise='-3072'>󰘚</span> {icon}",
+    "format-icons": ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"],
+    "tooltip-format": "RAM: {used:0.1f} GiB / {total:0.1f} GiB ({percentage}%)",
+    "interval": 2,
+  },
+}

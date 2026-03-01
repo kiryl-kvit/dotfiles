@@ -2,6 +2,7 @@
   "include": [
     "~/.config/waybar/modules/network.jsonc",
     "~/.config/waybar/modules/cpu.jsonc",
+    "~/.config/waybar/modules/memory.jsonc",
     "~/.config/waybar/modules/backlight.jsonc",
     "~/.config/waybar/modules/wireplumber.jsonc",
     "~/.config/waybar/modules/divider.jsonc",
@@ -20,6 +21,8 @@
     "network",
     "custom/divider",
     "cpu",
+    "custom/divider",
+    "memory",
     "custom/divider",
     "wireplumber",
     "custom/divider",
