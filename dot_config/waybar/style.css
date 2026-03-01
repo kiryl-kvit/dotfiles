@@ -4,3 +4,5 @@ window#waybar {
 
 @import "battery.css";
 @import "clock.css";
+@import "workspaces.css";
+@import "hyprland-window.css";

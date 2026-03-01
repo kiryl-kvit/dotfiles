@@ -2,28 +2,25 @@
   "layer": "top",
   "reload_style_on_change": true,
   "height": 40,
-  "modules-left": [
-    "hyprland/workspaces",
-  ],
-  "modules-right": [
-    "battery",
-    "clock"
-  ],
+  "modules-left": ["hyprland/workspaces"],
+  "modules-center": ["hyprland/window"],
+  "modules-right": ["battery", "clock", "hyprland/language"],
+  "hyprland/language": {
+    "format": "Lang: {}",
+    "format-en": "AMERICA, HELL YEAH!",
+    "format-en-colemak_dh": "AMERICA (Colemak-DH), HELL YEAH",
+    "format-tr": "As bayrakları",
+    "keyboard-name": "at-translated-set-2-keyboard",
+  },
   "battery": {
     "format": "{capacity}% <span font_size='24pt' rise='-4096'>{icon}</span>",
     "states": {
       "warning": 30,
-      "critical": 15
+      "critical": 15,
     },
-    "format-icons": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ]
+    "format-icons": ["", "", "", "", ""],
   },
   "clock": {
-    "format-alt": "{:%a, %d. %b  %H:%M}"
-  }
+    "format-alt": "{:%a, %d. %b  %H:%M}",
+  },
 }
