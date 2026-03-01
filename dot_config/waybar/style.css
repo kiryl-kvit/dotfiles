@@ -2,7 +2,7 @@ window#waybar {
   font-size: 18px
 }
 
+@import "divider.css";
 @import "battery.css";
-@import "clock.css";
 @import "workspaces.css";
 @import "hyprland-window.css";
