@@ -5,5 +5,5 @@
 
 #workspaces button.active {
   font-weight: bold;
-  color: #89b4fa;
+  color: @blue;
 }

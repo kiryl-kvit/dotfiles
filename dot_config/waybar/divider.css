@@ -1,5 +1,5 @@
 #custom-divider {
-  border-left: 1px solid currentColor;
+  border-left: 1px solid @surface2;
   margin: 10px 8px;
   min-width: 1px;
   min-height: 20px;
