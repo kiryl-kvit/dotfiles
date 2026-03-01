@@ -2,9 +2,9 @@
 }
 
 #battery.warning {
-  background-color: yellow
+  color: yellow;
 }
 
 #battery.critical {
-  background-color: red
+  color: red;
 }
