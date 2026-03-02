@@ -1,0 +1,19 @@
+#!/bin/bash
+# vol-change: adjust volume and send level to wob
+# Usage: vol-change +5 | -5 | mute
+
+WOB_PIPE=/tmp/wob_pipe
+
+case "$1" in
+  +*) wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ "${1#+}%+" ;;
+  -*) wpctl set-volume @DEFAULT_AUDIO_SINK@ "${1#-}%-" ;;
+  mute) wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
+esac
+
+# If muted, send 0; otherwise send current percentage
+if wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED; then
+  echo 0 > "$WOB_PIPE"
+else
+  vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d", $2 * 100}')
+  echo "$vol" > "$WOB_PIPE"
+fi
