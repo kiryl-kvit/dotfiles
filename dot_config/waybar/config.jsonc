@@ -11,11 +11,12 @@
     "~/.config/waybar/modules/battery.jsonc",
     "~/.config/waybar/modules/power-profile.jsonc",
     "~/.config/waybar/modules/clock.jsonc",
+    "~/.config/waybar/modules/meme.jsonc",
   ],
   "layer": "top",
   "reload_style_on_change": true,
   "height": 40,
-  "modules-left": ["hyprland/workspaces"],
+  "modules-left": ["hyprland/workspaces", "custom/divider", "custom/meme"],
   "modules-right": [
     "network",
     "custom/divider",
