@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#
+# battery-watch — sends notifications when battery reaches warning/critical levels.
+# Runs only under Hyprland (launched via exec-once in integrations.conf).
+#
+
+BATTERY=/sys/class/power_supply/BATT
+WARN_THRESHOLD=30
+CRIT_THRESHOLD=15
+
+# Track which notifications have already been sent to avoid repeats.
+# Reset when the battery starts charging.
+warned=0
+critted=0
+
+while true; do
+    capacity=$(cat "$BATTERY/capacity" 2>/dev/null)
+    status=$(cat "$BATTERY/status" 2>/dev/null)
+
+    if [[ "$status" == "Charging" || "$status" == "Full" ]]; then
+        # Reset flags once plugged in so warnings fire again next discharge cycle
+        warned=0
+        critted=0
+    elif [[ "$status" == "Discharging" && -n "$capacity" ]]; then
+        if (( capacity <= CRIT_THRESHOLD && critted == 0 )); then
+            notify-send \
+                --urgency=critical \
+                --icon=battery-caution \
+                --app-name="Battery" \
+                "Battery Critical" \
+                "Battery at ${capacity}%. Plug in now."
+            critted=1
+            warned=1   # suppress the warning-level notice too
+        elif (( capacity <= WARN_THRESHOLD && warned == 0 )); then
+            notify-send \
+                --urgency=normal \
+                --icon=battery-low \
+                --app-name="Battery" \
+                "Battery Low" \
+                "Battery at ${capacity}%. Consider plugging in."
+            warned=1
+        fi
+    fi
+
+    sleep 60
+done

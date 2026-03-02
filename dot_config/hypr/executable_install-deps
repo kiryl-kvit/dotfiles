@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-sudo pacman -S hyprpolkitagent waybar rofi hyprpaper brightessctl hyprlock hypridle jq wob
+sudo pacman -S hyprpolkitagent waybar rofi hyprpaper brightessctl hyprlock hypridle jq wob mako
