@@ -9,7 +9,7 @@
 window#waybar {
   background: transparent;
   color: @text;
-  font-family: "FiraCode Nerd Font";
+  font-family: "FiraCode Nerd Font Mono";
   font-size: 18px;
 }
 
