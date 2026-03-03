@@ -1,0 +1,7 @@
+{{- if eq .chezmoi.hostname "home" }}
+monitor = DP-1, 2560x1440@180, 0x0, 1
+{{- else if eq .chezmoi.hostname "expertbook" }}
+monitor = eDP-1, 2560x1440@144, 0x0, 1.25
+{{- else }}
+monitor = , preferred, auto, 1
+{{- end }}
