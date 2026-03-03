@@ -1,0 +1,30 @@
+/**
+ * Cliphist override — larger image thumbnails
+ * Inherits Monokai, only overrides icon/element sizing
+ */
+
+@theme "/usr/share/rofi/themes/Monokai.rasi"
+
+listview {
+    fixed-height: true;
+    lines:        4;
+    scrollbar:    true;
+}
+
+element {
+    border:  0;
+    padding: 1px;
+}
+
+element-icon {
+    size:             128px;
+    border:           0;
+    padding:          4px;
+    background-color: inherit;
+}
+
+element-text {
+    background-color: inherit;
+    text-color:       inherit;
+    vertical-align:   0.5;
+}
