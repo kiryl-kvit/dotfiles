@@ -2,8 +2,8 @@
   "network": {
     "format-wifi": "<span font_size='20pt' rise='-3072'>{icon}</span>",
     "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
-    "format-ethernet": "󰈀",
-    "format-disconnected": "󰤭 ",
+    "format-ethernet": "<span font_size='20pt' rise='-3072'>󰈀</span>",
+    "format-disconnected": "<span font_size='20pt' rise='-3072'>󰤭 </span>",
     "tooltip-format-wifi": "{essid} ({signalStrength}%)",
     "on-click": "ghostty -e nmtui",
     "interval": 2,
