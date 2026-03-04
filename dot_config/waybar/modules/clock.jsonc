@@ -1,5 +1,5 @@
 {
   "clock": {
-    "format-alt": "{:%a, %d. %b  %H:%M}",
+    "format": "{:%A %d %H:%M}",
   },
 }
