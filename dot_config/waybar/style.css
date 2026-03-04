@@ -6,6 +6,7 @@
 @import "hyprland-window.css";
 @import "power-profile.css";
 
+
 window#waybar {
   background: transparent;
   color: @text;
