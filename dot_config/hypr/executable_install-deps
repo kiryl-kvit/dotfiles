@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 sudo pacman -S hyprland hyprpolkitagent waybar rofi hyprpaper brightnessctl hyprlock hypridle jq wob mako
-sudo pacman -S grim slurp satty
+sudo pacman -S grim slurp satty xdg-desktop-portal-hyprland xdg-desktop-portal
+sudo pacman -S pipewire wireplumber
