@@ -3,7 +3,7 @@
     "exec": "~/.config/waybar/scripts/network-status.sh",
     "return-type": "json",
     "interval": 2,
-    "format": "{}",
+    "format": "{text}",
     "on-click": "ghostty -e nmtui",
   },
 }

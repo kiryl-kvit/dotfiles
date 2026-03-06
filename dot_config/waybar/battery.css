@@ -4,9 +4,6 @@
   100% { color: @green; }
 }
 
-#battery {
-}
-
 #battery.charging {
   color: @green;
   animation: charging-pulse 2s ease-in-out infinite;

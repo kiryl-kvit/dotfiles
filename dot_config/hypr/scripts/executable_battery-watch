@@ -4,7 +4,20 @@
 # Runs only under Hyprland (launched via exec-once in integrations.conf).
 #
 
-BATTERY=/sys/class/power_supply/BATT
+BATT_DIR=/sys/class/power_supply
+BATTERY=
+
+for candidate in "$BATT_DIR"/BAT* "$BATT_DIR"/BATT*; do
+    if [[ -f "$candidate/capacity" && -f "$candidate/status" ]]; then
+        BATTERY=$candidate
+        break
+    fi
+done
+
+if [[ -z "$BATTERY" ]]; then
+    exit 0
+fi
+
 WARN_THRESHOLD=30
 CRIT_THRESHOLD=15
 
