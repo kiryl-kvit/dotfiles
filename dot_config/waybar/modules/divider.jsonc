@@ -2,5 +2,6 @@
   "custom/divider": {
     "format": " ",
     "interval": "once",
+    "tooltip": false,
   },
 }

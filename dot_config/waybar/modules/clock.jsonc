@@ -1,5 +1,6 @@
 {
   "clock": {
     "format": "{:%A %d %H:%M}",
+    "tooltip": false,
   },
 }
