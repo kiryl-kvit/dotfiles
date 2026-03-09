@@ -1,9 +1,7 @@
 @import "colors.css";
 @import "divider.css";
-@import "battery.css";
 @import "workspaces.css";
-@import "power-profile.css";
-
+@import "power.css";
 
 window#waybar {
   background: transparent;

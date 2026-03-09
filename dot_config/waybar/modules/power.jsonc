@@ -1,0 +1,9 @@
+{
+  "custom/power": {
+    "exec": "~/.config/waybar/scripts/power-status.sh",
+    "return-type": "json",
+    "interval": 2,
+    "format": "{text}",
+    "on-click": "current=$(powerprofilesctl get); case $current in balanced) powerprofilesctl set performance ;; performance) powerprofilesctl set power-saver ;; power-saver) powerprofilesctl set balanced ;; esac",
+  },
+}

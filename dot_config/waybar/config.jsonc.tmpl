@@ -10,10 +10,7 @@
     "~/.config/waybar/modules/divider.jsonc",
     "~/.config/waybar/modules/language.jsonc",
     "~/.config/waybar/modules/workspaces.jsonc",
-{{- if ne .chezmoi.hostname "home" }}
-    "~/.config/waybar/modules/battery.jsonc",
-{{- end }}
-    "~/.config/waybar/modules/power-profile.jsonc",
+    "~/.config/waybar/modules/power.jsonc",
     "~/.config/waybar/modules/clock.jsonc",
   ],
   "layer": "top",
@@ -36,10 +33,6 @@
 {{- end }}
     "hyprland/language",
     "custom/divider",
-    "custom/power-profile",
-{{- if ne .chezmoi.hostname "home" }}
-    "custom/divider",
-    "battery",
-{{- end }}
+    "custom/power",
   ],
 }
