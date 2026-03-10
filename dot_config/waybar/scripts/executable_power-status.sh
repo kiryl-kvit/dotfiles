@@ -1,7 +1,5 @@
 #!/bin/bash
 
-battery_icons=("" "" "" "" "")
-
 profile_icons_balanced="󰗑"
 profile_icons_performance="󱐌"
 profile_icons_power_saver="󰌪"
@@ -65,7 +63,7 @@ if [[ -n "$bat_path" ]]; then
     bat_color="$text"
   fi
 
-  output="<span font_size='20pt' rise='-3072' foreground='${profile_color}'>${profile_icon}</span><span rise='-1024' foreground='${text}'>${capacity}%</span>"
+  output="<span font_size='20pt' rise='-3072' foreground='${profile_color}'>${profile_icon}</span> <span rise='-1024' foreground='${text}'>${capacity}%</span>"
   tooltip="Battery: ${capacity}% (${status}) | Profile: ${profile}"
 else
   output="<span font_size='20pt' rise='-3072' foreground='${profile_color}'>${profile_icon}</span>"
