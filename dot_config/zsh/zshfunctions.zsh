@@ -6,6 +6,10 @@ function zsh_append_path() {
     [ -d "$1" ] && export PATH="$PATH:$1"
 }
 
+function zsh_export_dir() {
+    [ -d "$2" ] && export "$1=$2"
+}
+
 function zsh_add_plugin() {
     PLUGIN_NAME=$(echo $1 | cut -d "/" -f 2)
     FALLBACK_NAME=$(echo $PLUGIN_NAME | cut -d "-" -f 2)
