@@ -23,6 +23,10 @@ if [ -z "$SSH_AUTH_SOCK" ]; then
   done
 fi
 
+export ANDROID_SDK_ROOT="$HOME/Android/Sdk"
+
+zsh_append_path "$ANDROID_SDK_ROOT/platform-tools"
+zsh_append_path "$ANDROID_SDK_ROOT/emulator"
 zsh_append_path "$HOME/.local/bin"
 zsh_append_path "$HOME/.dotnet/tools"
 zsh_append_path "/home/linuxbrew/.linuxbrew/bin"
