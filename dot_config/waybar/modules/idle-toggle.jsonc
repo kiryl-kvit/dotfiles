@@ -1,0 +1,9 @@
+{
+  "custom/idle-toggle": {
+    "exec": "~/.config/waybar/scripts/idle-toggle.sh",
+    "return-type": "json",
+    "interval": 2,
+    "format": "{text}",
+    "on-click": "if pidof hypridle > /dev/null 2>&1; then pkill hypridle; else hypridle & disown; fi",
+  },
+}
