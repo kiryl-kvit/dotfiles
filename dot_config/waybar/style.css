@@ -4,7 +4,7 @@
 @import "power.css";
 
 window#waybar {
-  background: transparent;
+  background: alpha(@crust, 0.8);
   color: @text;
   font-family: "FiraCode Nerd Font Mono";
   font-size: 18px;
@@ -12,8 +12,6 @@ window#waybar {
 
 .modules-left,
 .modules-right {
-  background: alpha(@crust, 0.8);
-  border-radius: 9999px;
   margin: 6px 8px;
   padding: 0 14px;
 }
