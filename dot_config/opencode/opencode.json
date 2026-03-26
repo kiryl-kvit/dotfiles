@@ -1,5 +1,13 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "deny"
+    }
+  },
   "agent": {
     "explore": {
       "model": "github-copilot/claude-sonnet-4.6"
