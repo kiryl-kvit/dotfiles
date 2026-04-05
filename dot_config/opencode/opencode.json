@@ -5,15 +5,9 @@
       "*": "allow",
       "*.env": "deny",
       "*.env.*": "deny",
-      "*.env.example": "deny"
+      "*.env.example": "deny",
+      "*nuget.conf*": "deny",
+      "*npmrc*": "deny"
     }
   },
-  "agent": {
-    "explore": {
-      "model": "github-copilot/claude-sonnet-4.6"
-    },
-    "general": {
-      "model": "github-copilot/claude-sonnet-4.6"
-    }
-  }
 }
