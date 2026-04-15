@@ -12,6 +12,24 @@
 {{-   $name = promptString "git name" -}}
 {{- end -}}
 
+{{- $gitSigningEnabled := false -}}
+{{- if (hasKey . "git_signing_enabled") -}}
+{{-   $gitSigningEnabled = .git_signing_enabled -}}
+{{- else -}}
+{{-   $gitSigningEnabled = promptBool "enable Git commit signing with SSH key" -}}
+{{- end -}}
+
+{{- $gitSigningSshKey := "" -}}
+{{- if $gitSigningEnabled -}}
+{{-   if (hasKey . "git_signing_ssh_key") -}}
+{{-     $gitSigningSshKey = .git_signing_ssh_key -}}
+{{-   else -}}
+{{-     $gitSigningSshKey = promptString "git signing SSH public key path" -}}
+{{-   end -}}
+{{- end -}}
+
 [data]
     email = {{ $email | quote }}
+    git_signing_enabled = {{ $gitSigningEnabled }}
+    git_signing_ssh_key = {{ $gitSigningSshKey | quote }}
     name = {{ $name | quote }}

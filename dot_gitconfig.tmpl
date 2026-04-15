@@ -45,3 +45,12 @@
 [user]
 	email = {{ .email }}
 	name = {{ .name }}
+{{- if and (hasKey . "git_signing_enabled") .git_signing_enabled }}
+	signingkey = {{ .git_signing_ssh_key }}
+
+[gpg]
+	format = ssh
+
+[commit]
+	gpgsign = true
+{{- end }}
