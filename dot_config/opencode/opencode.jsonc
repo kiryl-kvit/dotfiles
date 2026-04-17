@@ -11,4 +11,6 @@
       "*npmrc*": "deny"
     }
   },
+  // https://github.com/mohak34/opencode-notifier
+  "plugin": ["@mohak34/opencode-notifier@latest"]
 }
