@@ -40,3 +40,10 @@ background-color=#181825
 text-color=#f38ba8
 border-color=#f38ba8
 default-timeout=0
+
+# Battery alerts
+[app-name=Battery urgency=normal]
+on-notify=exec /bin/sh -c '/usr/bin/pw-play --media-role=Notification /home/pa2/.config/hypr/sounds/battery-low.oga >/dev/null 2>&1'
+
+[app-name=Battery urgency=critical]
+on-notify=exec /bin/sh -c '/usr/bin/pw-play --media-role=Notification /home/pa2/.config/hypr/sounds/battery-critical.oga >/dev/null 2>&1'

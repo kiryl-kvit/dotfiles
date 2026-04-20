@@ -20,6 +20,23 @@ fi
 
 WARN_THRESHOLD=30
 CRIT_THRESHOLD=15
+SOUND_DIR="$HOME/.config/hypr/sounds"
+
+play_alert_sound() {
+    local sound_file=$1
+
+    [[ -f "$sound_file" ]] || return 0
+
+    if command -v paplay >/dev/null 2>&1; then
+        paplay --volume=65536 "$sound_file" >/dev/null 2>&1 &
+    elif command -v aplay >/dev/null 2>&1; then
+        aplay "$sound_file" >/dev/null 2>&1 &
+    elif command -v mpv >/dev/null 2>&1; then
+        mpv --no-video --no-terminal --script-opts=autoload-disabled=yes --volume=100 "$sound_file" >/dev/null 2>&1 &
+    elif command -v ffplay >/dev/null 2>&1; then
+        ffplay -nodisp -autoexit -loglevel quiet -volume 100 "$sound_file" >/dev/null 2>&1 &
+    fi
+}
 
 # Track which notifications have already been sent to avoid repeats.
 # Reset when the battery starts charging.
@@ -40,8 +57,10 @@ while true; do
                 --urgency=critical \
                 --icon=battery-caution \
                 --app-name="Battery" \
+                --hint=string:sound-name:battery-caution \
                 "Battery Critical" \
                 "Battery at ${capacity}%. Plug in now."
+            play_alert_sound "$SOUND_DIR/battery-critical.wav"
             critted=1
             warned=1   # suppress the warning-level notice too
         elif (( capacity <= WARN_THRESHOLD && warned == 0 )); then
@@ -49,8 +68,10 @@ while true; do
                 --urgency=normal \
                 --icon=battery-low \
                 --app-name="Battery" \
+                --hint=string:sound-name:battery-low \
                 "Battery Low" \
                 "Battery at ${capacity}%. Consider plugging in."
+            play_alert_sound "$SOUND_DIR/battery-low.wav"
             warned=1
         fi
     fi
