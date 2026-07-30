@@ -2,7 +2,7 @@
 # bright-change: adjust backlight and send level to wob
 # Usage: bright-change +5% | 5%-
 
-WOB_PIPE=/tmp/wob_pipe
+WOB_PIPE="${XDG_RUNTIME_DIR:?}/wob.sock"
 
 brightnessctl set "$1"
 

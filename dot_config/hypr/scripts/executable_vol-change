@@ -2,7 +2,7 @@
 # vol-change: adjust volume and send level to wob
 # Usage: vol-change +5 | -5 | mute
 
-WOB_PIPE=/tmp/wob_pipe
+WOB_PIPE="${XDG_RUNTIME_DIR:?}/wob.sock"
 
 case "$1" in
   +*) wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ "${1#+}%+" ;;

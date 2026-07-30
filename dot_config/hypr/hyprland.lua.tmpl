@@ -1,11 +1,33 @@
 local mainMod = "SUPER"
+local configDir = os.getenv("HOME") .. "/.config/hypr"
 
-hl.monitor({
+{{- if eq .chezmoi.hostname "home" }}
+local monitor = {
+    output = "DP-1",
+    mode = "2560x1440@180",
+    position = "0x0",
+    scale = 1,
+}
+local vrr = 0
+{{- else if eq .chezmoi.hostname "expertbook" }}
+local monitor = {
     output = "eDP-1",
     mode = "2560x1600@144",
     position = "0x0",
     scale = 1.25,
-})
+}
+local vrr = 1
+{{- else }}
+local monitor = {
+    output = "",
+    mode = "preferred",
+    position = "auto",
+    scale = 1,
+}
+local vrr = 1
+{{- end }}
+
+hl.monitor(monitor)
 
 local environment = {
     XCURSOR_THEME = "breeze_cursors",
@@ -52,7 +74,7 @@ hl.config({
         },
     },
     misc = {
-        vrr = 1,
+        vrr = vrr,
     },
     cursor = {
         no_hardware_cursors = false,
@@ -65,18 +87,23 @@ hl.gesture({
     action = "workspace",
 })
 
+local sessionSetupCommand = table.concat({
+    "dbus-update-activation-environment --systemd",
+    "DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE",
+    "QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME",
+    "&& { systemctl --user restart",
+    "xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service",
+    "; systemctl --user restart xdg-desktop-portal.service",
+    "; systemctl --user reset-failed hyprpolkitagent.service",
+    "; systemctl --user start",
+    "hyprpolkitagent.service mako.service waybar.service hyprpaper.service",
+    "hypridle.service cliphist.service wob.socket; }",
+}, " ")
+
 local startupCommands = {
-    "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP && sleep 1 && systemctl --user stop xdg-desktop-portal-gtk xdg-desktop-portal-hyprland xdg-desktop-portal && systemctl --user start xdg-desktop-portal-hyprland && sleep 1 && systemctl --user start xdg-desktop-portal",
-    "systemctl --user start hyprpolkitagent",
-    "mako",
-    "waybar",
-    "hyprpaper",
-    "hypridle",
+    sessionSetupCommand,
     "bash -c '[ -x /usr/lib/pam_kwallet_init ] && /usr/lib/pam_kwallet_init'",
-    "rm -f /tmp/wob_pipe && mkfifo /tmp/wob_pipe && tail -f /tmp/wob_pipe | wob -c ~/.config/wob/wob.ini",
-    "~/.config/hypr/scripts/battery-watch",
-    "wl-paste --type text --watch cliphist store",
-    "wl-paste --type image --watch cliphist store",
+    configDir .. "/scripts/battery-watch",
 }
 
 hl.on("hyprland.start", function()
@@ -125,11 +152,11 @@ hl.bind(mainMod .. " + SHIFT + mouse:272", hl.dsp.window.resize(), { mouse = tru
 local repeatingLocked = { repeating = true, locked = true }
 local locked = { locked = true }
 
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("/home/pa2/.config/hypr/scripts/vol-change +5"), repeatingLocked)
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("/home/pa2/.config/hypr/scripts/vol-change -5"), repeatingLocked)
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd("/home/pa2/.config/hypr/scripts/vol-change mute"), locked)
-hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("/home/pa2/.config/hypr/scripts/bright-change +5%"), repeatingLocked)
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("/home/pa2/.config/hypr/scripts/bright-change 5%-"), repeatingLocked)
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd(configDir .. "/scripts/vol-change +5"), repeatingLocked)
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd(configDir .. "/scripts/vol-change -5"), repeatingLocked)
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd(configDir .. "/scripts/vol-change mute"), locked)
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd(configDir .. "/scripts/bright-change +5%"), repeatingLocked)
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd(configDir .. "/scripts/bright-change 5%-"), repeatingLocked)
 
 hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd([=[grim -g "$(slurp)" - | tee >(wl-copy) | satty --filename -]=]))
 hl.bind("Print", hl.dsp.exec_cmd([=[grim - | tee >(wl-copy) | satty --filename -]=]))
