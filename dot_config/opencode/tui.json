@@ -3,5 +3,8 @@
   "theme": "system",
   "attention": {
     "enabled": true
+  },
+  "scroll_acceleration": {
+    "enabled": true
   }
 }

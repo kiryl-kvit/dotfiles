@@ -19,7 +19,7 @@ progress-color=over #45475a
 font=FiraCode Nerd Font 11
 
 # Keep notifications until dismissed
-default-timeout=8000
+default-timeout=5000
 ignore-timeout=0
 
 # Animations

@@ -30,6 +30,8 @@ zsh_append_path "$ANDROID_SDK_ROOT/emulator"
 zsh_append_path "$HOME/.local/bin"
 zsh_append_path "$HOME/.dotnet/tools"
 zsh_append_path "/home/linuxbrew/.linuxbrew/bin"
+zsh_append_path "$HOME/.sdk/flutter/bin"
+zsh_append_path "$HOME/.nvm/nvm.sh"
 
 zsh_export_dir "JAVA_HOME" "/usr/lib/jvm/java-21-openjdk"
 zsh_append_path "$JAVA_HOME/bin"
@@ -41,3 +43,4 @@ zsh_add_plugin "zsh-users/zsh-autosuggestions"
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
 zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
