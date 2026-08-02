@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # battery-watch — sends notifications when battery reaches warning/critical levels.
-# Runs only under Hyprland (launched via exec-once in integrations.conf).
+# Runs only under Hyprland (launched from hyprland.lua).
 #
 
 BATT_DIR=/sys/class/power_supply

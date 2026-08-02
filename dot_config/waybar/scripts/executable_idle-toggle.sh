@@ -5,7 +5,7 @@ unlocked_icon="󰿆"
 
 text="#cdd6f4"
 
-if pidof hypridle > /dev/null 2>&1; then
+if systemctl --user is-active --quiet hypridle.service; then
   icon="$unlocked_icon"
   tooltip="Idle lock: ON (click to disable)"
   class="active"
