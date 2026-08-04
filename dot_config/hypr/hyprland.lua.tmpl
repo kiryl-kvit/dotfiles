@@ -94,10 +94,10 @@ local sessionSetupCommand = table.concat({
     "&& { systemctl --user restart",
     "xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service",
     "; systemctl --user restart xdg-desktop-portal.service",
-    "; systemctl --user start graphical-session.target",
+    "; systemctl --user start hyprpaper.service",
     "; systemctl --user reset-failed hyprpolkitagent.service",
     "; systemctl --user start",
-    "hyprpolkitagent.service mako.service waybar.service hyprpaper.service",
+    "hyprpolkitagent.service mako.service waybar.service",
     "hypridle.service cliphist.service wob.socket; }",
 }, " ")
 
