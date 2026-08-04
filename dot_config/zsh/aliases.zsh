@@ -14,6 +14,7 @@ alias gi='git-ignore'
 
 # Coloring
 alias l='ls -lah --color=auto'
+alias ll='ls -lh --color=auto'
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias ip='ip --color=auto'
