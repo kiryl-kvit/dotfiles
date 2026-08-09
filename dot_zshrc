@@ -41,6 +41,7 @@ export EDITOR="nvim"
 
 zsh_add_plugin "zsh-users/zsh-autosuggestions"
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+eval "$(pa2-skills completion zsh)"
 
 zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
